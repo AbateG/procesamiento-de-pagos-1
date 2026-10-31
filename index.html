@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoría Flujo Europa → LATAM | Revolut + Binance</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .step-active { border-color: #3b82f6; background: #eff6ff; }
+  .step-done { border-color: #22c55e; background: #f0fdf4; }
+  .card { transition: all 0.2s ease; }
+  .card:hover { transform: translateY(-2px); }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+
+  <!-- Header -->
+  <header class="mb-10">
+    <h1 class="text-2xl font-bold tracking-tight">Auditoría de Flujo de Pago</h1>
+    <p class="text-slate-500 text-sm mt-1">Europa → América Latina · Comparativa objetiva · Sin sesgos</p>
+  </header>
+
+  <!-- Calculadora -->
+  <section class="mb-12">
+    <h2 class="text-lg font-semibold mb-4">Simulador en vivo</h2>
+    <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+      <div class="flex flex-col sm:flex-row gap-4 items-end mb-6">
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-slate-600 mb-1">Monto a enviar (EUR)</label>
+          <input id="amount" type="number" value="1000" min="10" step="10"
+                 class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                 oninput="calc()">
+        </div>
+        <button onclick="calc()" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700">
+          Calcular
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="results">
+        <!-- Cards se generan por JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Pipeline -->
+  <section class="mb-12">
+    <h2 class="text-lg font-semibold mb-4">Pipeline operativo (4 etapas)</h2>
+    <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3" id="pipeline">
+        <div class="step border-2 border-slate-200 rounded-lg p-4 cursor-pointer" data-step="1" onclick="activateStep(1)">
+          <div class="text-xs font-bold text-slate-400 mb-1">01</div>
+          <div class="font-semibold text-sm">Revolut → Revolut</div>
+          <div class="text-xs text-slate-500 mt-1">Inmediato · 0 €</div>
+        </div>
+        <div class="step border-2 border-slate-200 rounded-lg p-4 cursor-pointer" data-step="2" onclick="activateStep(2)">
+          <div class="text-xs font-bold text-slate-400 mb-1">02</div>
+          <div class="font-semibold text-sm">SEPA Instant → Binance</div>
+          <div class="text-xs text-slate-500 mt-1">5–20 s red · 0–1 €</div>
+        </div>
+        <div class="step border-2 border-slate-200 rounded-lg p-4 cursor-pointer" data-step="3" onclick="activateStep(3)">
+          <div class="text-xs font-bold text-slate-400 mb-1">03</div>
+          <div class="font-semibold text-sm">Spot EUR/USDT</div>
+          <div class="text-xs text-slate-500 mt-1">Inmediato · ~0.10 %</div>
+        </div>
+        <div class="step border-2 border-slate-200 rounded-lg p-4 cursor-pointer" data-step="4" onclick="activateStep(4)">
+          <div class="text-xs font-bold text-slate-400 mb-1">04</div>
+          <div class="font-semibold text-sm">P2P → Banco local</div>
+          <div class="text-xs text-slate-500 mt-1">2–15 min · 0 % plataforma</div>
+        </div>
+      </div>
+      <div id="stepDetail" class="mt-5 p-4 bg-slate-50 rounded-lg text-sm text-slate-600 hidden"></div>
+    </div>
+  </section>
+
+  <!-- Matriz AML -->
+  <section class="mb-12">
+    <h2 class="text-lg font-semibold mb-4">Matriz de riesgo AML / KYC (UE)</h2>
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-100 text-left">
+          <tr>
+            <th class="px-4 py-3 font-medium">Factor</th>
+            <th class="px-4 py-3 font-medium">Evaluación</th>
+            <th class="px-4 py-3 font-medium">Nivel</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="px-4 py-3">Titularidad de cuentas</td>
+            <td class="px-4 py-3">Mismo titular (Revolut + Binance)</td>
+            <td class="px-4 py-3"><span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium">Bajo</span></td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3">Tipo de transferencia</td>
+            <td class="px-4 py-3">SEPA Instant entre entidades reguladas</td>
+            <td class="px-4 py-3"><span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium">Bajo</span></td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3">Origen de fondos</td>
+            <td class="px-4 py-3">Salario / empleador (documentable)</td>
+            <td class="px-4 py-3"><span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium">Bajo</span></td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3">Volumen / frecuencia atípica</td>
+            <td class="px-4 py-3">Puede activar revisión Source of Wealth</td>
+            <td class="px-4 py-3"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">Medio</span></td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3">Acreditación Binance</td>
+            <td class="px-4 py-3">Hasta 24 h oficiales (no instantánea garantizada)</td>
+            <td class="px-4 py-3"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">Medio</span></td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3">Riesgo de contraparte P2P</td>
+            <td class="px-4 py-3">Escrow Binance + liquidez local variable</td>
+            <td class="px-4 py-3"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">Medio</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Gráfico -->
+  <section class="mb-12">
+    <h2 class="text-lg font-semibold mb-4">Comisión vs Tiempo de liquidación</h2>
+    <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+      <canvas id="chart" height="120"></canvas>
+    </div>
+  </section>
+
+  <!-- Notas facticas -->
+  <footer class="text-xs text-slate-400 border-t border-slate-200 pt-6">
+    <p>Datos basados en tarifas públicas Revolut / Binance (2026). SEPA Instant acredita en red en segundos; Binance procesa depósitos hasta 24 h. Spread P2P variable según país y liquidez. No constituye asesoramiento financiero ni legal.</p>
+  </footer>
+</div>
+
+<script>
+const details = {
+  1: "Empleador envía EUR a cuenta Revolut del empleado. Transferencia interna Revolut: ~20 segundos, 0 % comisión.",
+  2: "Empleado envía EUR desde Revolut al IBAN de su cuenta Binance vía SEPA Instant. Red: 5–20 s. Binance acredita habitualmente en minutos, techo oficial 24 h. Comisión Binance: 0–1 €.",
+  3: "Compra Spot EUR/USDT en Binance. Ejecución inmediata. Comisión estándar ~0,10 % (0,075 % con BNB).",
+  4: "Venta USDT en Binance P2P a comprador local (banco o pago móvil). Tiempo típico 2–15 min. Comisión plataforma 0 %. Coste real = spread del anunciante."
+};
+
+function activateStep(n) {
+  document.querySelectorAll('.step').forEach(el => {
+    el.classList.remove('step-active', 'step-done');
+    if (+el.dataset.step < n) el.classList.add('step-done');
+    if (+el.dataset.step === n) el.classList.add('step-active');
+  });
+  const box = document.getElementById('stepDetail');
+  box.classList.remove('hidden');
+  box.textContent = details[n];
+}
+
+function calc() {
+  const amt = parseFloat(document.getElementById('amount').value) || 0;
+  const results = document.getElementById('results');
+
+  // Opción A: AirTM
+  const airFeePct = 0.065;
+  const airFee = amt * airFeePct;
+  const airNet = amt - airFee;
+
+  // Opción B: SWIFT
+  const swiftFixed = 25;
+  const swiftPct = 0.015;
+  const swiftFee = swiftFixed + (amt * swiftPct);
+  const swiftNet = amt - swiftFee;
+
+  // Opción C: Revolut + Binance
+  const binanceFee = 1; // SEPA
+  const spotFee = amt * 0.001;
+  const p2pSpread = amt * 0.003; // estimación conservadora
+  const cFee = binanceFee + spotFee + p2pSpread;
+  const cNet = amt - cFee;
+
+  results.innerHTML = `
+    <div class="card border border-slate-200 rounded-xl p-5 bg-slate-50">
+      <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">A · AirTM P2P</div>
+      <div class="mt-2 text-2xl font-bold">${airNet.toFixed(2)} €</div>
+      <div class="text-sm text-red-600 mt-1">−${airFee.toFixed(2)} € (≈6.5 %)</div>
+      <div class="text-xs text-slate-500 mt-3">Tiempo: ~24 h</div>
+    </div>
+    <div class="card border border-slate-200 rounded-xl p-5 bg-slate-50">
+      <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">B · SWIFT Bancario</div>
+      <div class="mt-2 text-2xl font-bold">${swiftNet.toFixed(2)} €</div>
+      <div class="text-sm text-red-600 mt-1">−${swiftFee.toFixed(2)} € (fijo + margen)</div>
+      <div class="text-xs text-slate-500 mt-3">Tiempo: 1–3 días</div>
+    </div>
+    <div class="card border-2 border-blue-500 rounded-xl p-5 bg-blue-50">
+      <div class="text-xs font-semibold text-blue-700 uppercase tracking-wide">C · Revolut + Binance P2P</div>
+      <div class="mt-2 text-2xl font-bold text-blue-900">${cNet.toFixed(2)} €</div>
+      <div class="text-sm text-blue-700 mt-1">−${cFee.toFixed(2)} € (≈0.15–0.4 %)</div>
+      <div class="text-xs text-blue-600 mt-3">Tiempo típico: 15 min – horas</div>
+    </div>
+  `;
+}
+
+// Chart
+const ctx = document.getElementById('chart').getContext('2d');
+new Chart(ctx, {
+  type: 'scatter',
+  data: {
+    datasets: [
+      {
+        label: 'AirTM',
+        data: [{x: 24, y: 6.5}],
+        backgroundColor: '#ef4444',
+        pointRadius: 10
+      },
+      {
+        label: 'SWIFT',
+        data: [{x: 48, y: 3.5}],
+        backgroundColor: '#f59e0b',
+        pointRadius: 10
+      },
+      {
+        label: 'Revolut + Binance',
+        data: [{x: 0.5, y: 0.25}],
+        backgroundColor: '#3b82f6',
+        pointRadius: 12
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom' },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.raw.y}% comisión · ${ctx.raw.x} h`
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Tiempo de liquidación (horas)' },
+        min: 0,
+        max: 72
+      },
+      y: {
+        title: { display: true, text: 'Comisión efectiva (%)' },
+        min: 0,
+        max: 10
+      }
+    }
+  }
+});
+
+// Init
+calc();
+activateStep(1);
+</script>
+</body>
+</html>
